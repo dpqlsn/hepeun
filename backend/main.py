@@ -1,70 +1,39 @@
 import os
-from typing import List
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 import httpx
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException
 from dotenv import load_dotenv
+import xml.etree.ElementTree as ET
 
-load_dotenv()
+app = FastAPI() 
 
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-SERVICE_KEY = os.getenv("SERVICE_KEY")
-
-
-class Facility(BaseModel):
-    id: str
-    name: str
-    address: str
-    phone: str
-    type: str
-    service: str
-
-
-@app.get("/")
-async def root():
-    return {"message": "Hepeun 백엔드 작동 중"}
-
-
-@app.get("/facilities", response_model=List[Facility])
+@app.get("/facilities")
 async def get_facilities():
-    if not SERVICE_KEY:
+    service_key = os.getenv("VITE_API_KEY")
+    if not service_key:
         raise HTTPException(status_code=500, detail="API 키가 설정되어 있지 않습니다.")
-    url = "https://api.odcloud.kr/api/15001020/v1/uddi:73a09ce6-7c10-4174-8be1-6cf139e3361e"
-    params = {
-        "page": 1,
-        "perPage": 100,
-        "serviceKey": SERVICE_KEY,
-    }
 
-    async with httpx.AsyncClient() as client:
-        res = await client.get(url, params=params)
-        if res.status_code != 200:
-            raise HTTPException(status_code=500, detail="공공데이터 API 호출 실패")
-        raw_data = res.json().get("data", [])
+    url = "https://data.humetro.busan.kr/voc/api/open_api_convenience.tnn"
 
-    facilities = []
-    for idx, item in enumerate(raw_data):
-        addr = item.get("소재지도로명주소") or item.get("소재지지번주소") or "주소 없음"
-        if "부산" not in addr:
-            continue
-        facilities.append(
-            Facility(
-                id=f"{item.get('시설명', 'unknown')}-{idx}",
-                name=item.get("시설명", "정보 없음"),
-                address=addr,
-                phone=item.get("전화번호", "정보 없음"),
-                type=item.get("운영형태", "정보 없음"),
-                service=item.get("장애인편의시설정보", "정보 없음"),
-            )
-        )
-    return facilities
+    try:
+        async with httpx.AsyncClient() as client:
+            res = await client.get(url, params={"serviceKey": service_key}, headers={"Accept": "application/xml"})
+            res.raise_for_status()
+
+            root = ET.fromstring(res.text)
+            facilities = []
+            for item in root.findall(".//item"):
+                facilities.append({
+                    "name": item.findtext("시설명"),
+                    "address": item.findtext("소재지도로명주소") or item.findtext("소재지지번주소"),
+                    "phone": item.findtext("전화번호"),
+                    "type": item.findtext("운영형태"),
+                    "service": item.findtext("장애인편의시설정보"),
+                })
+
+            return facilities
+
+    except httpx.HTTPStatusError as e:
+        print(f"API 호출 실패: {e.response.status_code}, 내용: {e.response.text}")
+        raise HTTPException(status_code=e.response.status_code, detail=e.response.text)
+    except ET.ParseError as e:
+        raise HTTPException(status_code=500, detail=f"XML 파싱 오류: {str(e)}")

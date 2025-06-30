@@ -1,44 +1,72 @@
 import os
 from typing import List
+import urllib.parse
+import xml.etree.ElementTree as ET
 import httpx
-from fastapi import APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException
+from pydantic import BaseModel
 from dotenv import load_dotenv
 
-from models import Facility
-
 load_dotenv()
+
+app = FastAPI()
 router = APIRouter()
+
+# Pydantic 모델 (Facility 정의)
+class Facility(BaseModel):
+    id: str
+    name: str
+    address: str
+    phone: str
+    type: str
+    service: str
 
 @router.get("/facilities", response_model=List[Facility])
 async def get_facilities():
-    try:
-        service_key = os.getenv("SERVICE_KEY")
-        url = "https://api.odcloud.kr/api/15001020/v1/uddi:73a09ce6-7c10-4174-8be1-6cf139e3361e"
-        params = {
-            "page": 1,
-            "perPage": 100,
-            "serviceKey": service_key
-        }
+    encoded_key = os.getenv("VITE_API_KEY")
+    if not encoded_key:
+        raise HTTPException(status_code=500, detail="API 키가 설정되어 있지 않습니다.")
 
-        async with httpx.AsyncClient() as client:
-            res = await client.get(url, params=params)
-            res.raise_for_status()
-            raw_data = res.json()["data"]
+    service_key = encoded_key  # 인코딩된 상태로 그대로 사용
 
-        facilities = [
-            Facility(
-                id=f"{item['시설명']}-{idx}",
-                name=item["시설명"],
-                address=item.get("소재지도로명주소") or item.get("소재지지번주소") or "주소 없음",
-                phone=item.get("전화번호", "정보 없음"),
-                type=item.get("운영형태", "정보 없음"),
-                service=item.get("장애인편의시설정보", "정보 없음")
+    url = "https://data.humetro.busan.kr/voc/api/open_api_convenience.tnn"
+    params = {
+        "serviceKey": service_key
+    }
+
+    async with httpx.AsyncClient() as client:
+        res = await client.get(url, params=params, headers={"Accept": "application/xml"})
+        if res.status_code != 200:
+            raise HTTPException(status_code=res.status_code, detail=f"API 호출 실패: {res.text}")
+
+        try:
+            root = ET.fromstring(res.text)
+        except ET.ParseError as e:
+            raise HTTPException(status_code=500, detail=f"XML 파싱 오류: {str(e)}")
+
+        facilities = []
+        for item in root.findall(".//item"):  # XML 구조에 따라 조정 필요
+            name = item.findtext("시설명") or "이름없음"
+            address = item.findtext("소재지도로명주소") or item.findtext("소재지지번주소") or "주소 없음"
+            phone = item.findtext("전화번호") or "정보 없음"
+            ftype = item.findtext("운영형태") or "정보 없음"
+            service = item.findtext("장애인편의시설정보") or "정보 없음"
+
+            # 부산 지역 필터링 (필요시)
+            if "부산" not in address:
+                continue
+
+            facilities.append(
+                Facility(
+                    id=f"{name}",
+                    name=name,
+                    address=address,
+                    phone=phone,
+                    type=ftype,
+                    service=service
+                )
             )
-            for idx, item in enumerate(raw_data)
-            if "부산" in item.get("소재지도로명주소", "")
-        ]
 
-        return facilities
+    return facilities
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+app.include_router(router)
