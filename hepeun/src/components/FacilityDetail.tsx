@@ -7,8 +7,6 @@ export default function FacilityDetail({ facility }: Props) {
         <h2>{facility.name}</h2>
         <p>주소: {facility.address}</p>
         <p>전화: {facility.phone}</p>
-        <p>운영형태: {facility.operation_type}</p>
-        <p>서비스: {facility.service_details}</p>
         </Container>
     );
 }

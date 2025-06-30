@@ -33,8 +33,6 @@ export default function App() {
           <h2>{selectedFacility.name}</h2>
           <p>주소: {selectedFacility.address}</p>
           <p>전화번호: {selectedFacility.phone}</p>
-          <p>운영형태: {selectedFacility.type}</p>
-          <p>서비스 내용: {selectedFacility.service}</p>
           <_.CloseButton onClick={() => setSelectedFacility(null)}>닫기</_.CloseButton>
         </_.Detail>
       )}

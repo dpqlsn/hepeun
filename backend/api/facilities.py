@@ -7,18 +7,14 @@ def get_facilities():
     return [
         {
             "id": 1,
-            "name": "시설A",
-            "address": "서울특별시 종로구 종로 1길 1",
-            "phone": "02-123-4567",
-            "operation_type": "공공운영",
-            "service_details": "장애인 직업 재활 및 상담 서비스 제공"
+            "name": "강서구 장애인복지관",
+            "address": "부산광역시 강서구 대저로 324번길 17",
+            "phone": "051-971-4510",
         },
         {
             "id": 2,
-            "name": "시설B",
-            "address": "서울특별시 중구 세종대로 110",
-            "phone": "02-765-4321",
-            "operation_type": "민간운영",
-            "service_details": "장애인 생활 지원 및 복지 서비스 제공"
+            "name": "부산광역시 강서구장애인복지관",
+            "address": "부산광역시 강서구 명지국제8로 263",
+            "phone": " 051-972-2040",
         }
     ]
