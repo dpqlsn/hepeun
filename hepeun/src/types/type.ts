@@ -3,8 +3,8 @@ export interface Facility {
     name: string;
     address: string;
     phone: string;
-    type: string;
-    service: string;
+    operation_type: string;
+    service_details: string;
 }
 
 export interface Props {

@@ -1,7 +1,17 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import type { AxiosResponse } from "axios";
-import type { Facility, ApiResponse } from "../types/type";
+import type { ApiResponse } from "../types/type";
+
+export interface Facility {
+    id: string;
+    name: string;
+    address: string;
+    phone: string;
+    type: string;
+    service: string;
+}
+
 
 export default function useFacilities() {
     const [facilities, setFacilities] = useState<Facility[]>([]);
