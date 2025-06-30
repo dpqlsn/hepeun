@@ -30,10 +30,10 @@ export const ListItem = styled.li<{ selected: boolean }>`
     margin-bottom: 0.625rem;
     padding: 0.625rem;
     cursor: pointer;
-    background-color: ${({ selected }) => (selected ? "#eef" : "white")};
 
     &:hover {
-        background-color: #ddf;
+        background-color: #fff;
+        color: #000;
     }
 `;
 
@@ -42,7 +42,6 @@ export const Detail = styled.div`
     border: 0.125rem solid #333;
     padding: 1.25rem;
     border-radius: 0.375rem;
-    background-color: #fafafa;
 `;
 
 export const CloseButton = styled.button`
@@ -53,8 +52,4 @@ export const CloseButton = styled.button`
     color: white;
     border-radius: 0.25rem;
     cursor: pointer;
-
-    &:hover {
-        background-color: #555;
-    }
 `;
