@@ -1,17 +1,9 @@
 import { create } from "zustand";
-
-interface Props {
-    id: string;
-    name: string;
-    address: string;
-    phone: string;
-    type: string;
-    service: string;
-}
+import type { Facility } from "../types/type";
 
 interface FavoriteState {
-    favorites: Props[];
-    toggleFavorite: (facility: Props) => void;
+    favorites: Facility[];
+    toggleFavorite: (facility: Facility) => void;
     isFavorite: (id: string) => boolean;
 }
 

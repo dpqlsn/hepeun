@@ -1,15 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-
-interface Props {
-    id: string;
-    name: string;
-    address: string;
-    phone: string;
-    type: string;
-    service: string;
-}
-
+import type { Facility } from "../types/type";
 interface RawFacility {
     시설명: string;
     소재지도로명주소?: string;
@@ -20,7 +11,7 @@ interface RawFacility {
 }
 
 export default function useFacilities() {
-    const [facilities, setFacilities] = useState<Props[]>([]);
+    const [facilities, setFacilities] = useState<Facility[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -42,7 +33,7 @@ export default function useFacilities() {
 
             const data = res.data.data as RawFacility[];
 
-            const formatted: Props[] = data
+            const formatted: Facility[] = data
             .filter((item) =>
                 item.소재지도로명주소?.includes("부산")
             )
