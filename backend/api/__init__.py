@@ -1,3 +1,5 @@
-from .external_api import router as external_router
+from .facilities import router as facilities_router
 
-routers = [external_router]
+routers = [
+    facilities_router,
+]
