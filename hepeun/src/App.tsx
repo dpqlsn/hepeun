@@ -1,6 +1,6 @@
 import { useState } from "react";
 import useFacilities from "./hooks/useFacilities";
-import type { Facility } from "../src/types/type";
+import type { Facility } from "./types/type";
 import * as _ from "./style";
 
 export default function App() {
