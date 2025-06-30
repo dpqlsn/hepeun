@@ -24,9 +24,9 @@ const Container = styled.div`
 `;
 
 const Key = styled.div`
-    border: 1px solid #ccc;
+    border: 1rem solid #ccc;
     margin-bottom: 1rem;
-    padding: 10px;
+    padding: 10rem;
     cursor: pointer;
 
     &:hover {
