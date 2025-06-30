@@ -1,35 +1,43 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import useFacilities from "./hooks/useFacilities";
+import type { Facility } from "../src/types/type";
+import * as _ from "./style";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const { facilities, loading, error } = useFacilities();
+  const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <_.Container>
+      <_.Title>부산 장애인 복지 시설 정보</_.Title>
 
-export default App
+      {loading && <_.Message>로딩 중...</_.Message>}
+      {error && <_.ErrorMessage>{error}</_.ErrorMessage>}
+
+      <_.List>
+        {facilities.map((facility) => (
+          <_.ListItem
+            key={facility.id}
+            selected={selectedFacility?.id === facility.id}
+            onClick={() => setSelectedFacility(facility)}
+          >
+            <strong>{facility.name}</strong>
+            <br />
+            <small>{facility.address}</small>
+          </_.ListItem>
+        ))}
+      </_.List>
+
+      {selectedFacility && (
+        <_.Detail>
+          <h2>{selectedFacility.name}</h2>
+          <p>주소: {selectedFacility.address}</p>
+          <p>전화번호: {selectedFacility.phone}</p>
+          <p>운영형태: {selectedFacility.type}</p>
+          <p>서비스 내용: {selectedFacility.service}</p>
+          <_.CloseButton onClick={() => setSelectedFacility(null)}>닫기</_.CloseButton>
+        </_.Detail>
+      )}
+    </_.Container>
+  );
+}
